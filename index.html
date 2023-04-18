@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm tỉnh</title>
+    <link rel="stylesheet" href="style.css"></link>
+</head>
+<body>
+    <form type="text" class="search-form">
+        <input type="search" class="search" placeholder="Nhập tên tỉnh"/>
+        <ul class="suggestions">
+            <li>Tên tỉnh hiển thị ở đây</li>
+        </ul>
+    </form>
+
+    <script>
+        const endpoint = "https://raw.githubusercontent.com/madnh/hanhchinhvn/master/dist/tinh_tp.json";
+        const cities = [];
+        fetch(endpoint)
+        .then(blob => blob.json())
+        .then(data => cities.push(...(Object.values(data)))); //chuyển data json từ object thành array rồi đẩy vào cities
+
+        const searchInput = document.querySelector(".search");
+        const suggestions = document.querySelector(".suggestions");
+
+        function findMatches (wordToMatch, citiesArray) {
+            return citiesArray.filter( place => {
+                const regex = new RegExp(wordToMatch, 'gi');
+                return place.name.match(regex);
+            })
+        } // Tìm từ khoá
+        
+        function displayMatches () { 
+            const matchedArray = findMatches(this.value, cities);
+            const html = matchedArray.map(place => {
+                const regex = new RegExp(this.value, 'gi');
+                const matchedCity = place.name_with_type.replace(regex, `<span class="hl">${this.value}</span>`);
+                return `<li>
+                ${matchedCity}
+                </li>`;
+            }
+            ).join('');
+            suggestions.innerHTML = html;
+        }
+
+        searchInput.addEventListener('change', displayMatches);
+        searchInput.addEventListener('keyup', displayMatches);
+
+        window.addEventListener('keydown', function (event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
+
+    </script>
+</body>
+</html>
